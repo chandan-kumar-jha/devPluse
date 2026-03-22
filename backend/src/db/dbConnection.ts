@@ -24,7 +24,7 @@ const getMongoUri = (): string => {
 }
 
 // ── Main connection function ───────────────────────────────────────
-export async function mongo_Db_Connections(retries = MAX_RETRIES): Promise<void> {
+export async function connectDB(retries = MAX_RETRIES): Promise<void> {
   // return early if already connected
   if (isConnected) {
     if (process.env.NODE_ENV === "development") {
