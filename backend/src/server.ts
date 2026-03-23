@@ -7,10 +7,14 @@ import cookieParser from 'cookie-parser'
 import { connectDB } from './db/dbConnection'
 import { env } from './config/env'
 import authRoutes from './routes/auth.routes'
+import profileRoutes from './routes/profile.routes'
 import errorHandler from './middleware/errorHandler'    // ← missing
+import { requestId } from './middleware/requestId'
+import sessionRoutes from './routes/session.routes'
 
 const app = express()
 
+app.use(requestId)
 app.use(cors({
   origin: env.CLIENT_URL,
   credentials: true,
@@ -33,6 +37,8 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // ── Routes ────────────────────────────────────────────────────────
 app.use('/auth', authRoutes)
+app.use('/profile', profileRoutes)
+app.use('/sessions', sessionRoutes)
 
 // ── 404 handler ───────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {

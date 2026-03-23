@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.9.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
@@ -22,7 +23,10 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.3.0",
     "morgan": "^1.10.1",
-    "resend": "^6.9.4",
+    "multer": "^2.1.1",
+    "nodemailer": "^8.0.3",
+    "sanitize-html": "^2.17.2",
+    "sharp": "^0.34.5",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -32,7 +36,10 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
+    "@types/multer": "^2.1.0",
     "@types/node": "^25.5.0",
+    "@types/nodemailer": "^7.0.11",
+    "@types/sanitize-html": "^2.16.1",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
