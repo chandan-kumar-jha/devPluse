@@ -89,12 +89,12 @@ sessionSchema.index(
   { weights: { title: 10, notes: 5 } } // title matches ranked higher
 )
 
-// ── Sanitise tags before save ──────────────────────────────────────
-sessionSchema.pre('validate', function (this: ISession, next: any) {
-  if (this.tags && this.tags.length > 0) {
-    this.tags = [...new Set(this.tags.map((tag) => tag.toLowerCase().trim()))]
-  }
-  next()
-})
+//  ── Sanitise tags before save ──────────────────────────────────────
+// sessionSchema.pre('validate', function (this: ISession, next: any) {
+//   if (this.tags && this.tags.length > 0) {
+//     this.tags = [...new Set(this.tags.map((tag) => tag.toLowerCase().trim()))]
+//   }
+//   next()
+// })
 
 export const Session = mongoose.model<ISession>('Session', sessionSchema)
