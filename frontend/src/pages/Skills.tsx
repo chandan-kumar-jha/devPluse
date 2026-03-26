@@ -3,7 +3,11 @@ import {
   Terminal, LayoutDashboard,  Code2, 
   Bell, Settings, LogOut, Plus,  
   Search,  Star,  Trophy, X,  
-  TrendingUp,  } from "lucide-react";
+  TrendingUp,
+  Clock,
+  Target,
+  User,
+  SettingsIcon,  } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router";
 import { useState } from "react";
 import { 
@@ -134,16 +138,31 @@ export const Skills = () => {
             <LayoutDashboard className="h-5 w-5" />
             Dashboard
           </Link>
-          <Link to="/skills" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium transition-colors ${location.pathname === '/skills' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}>
-            <Code2 className="h-5 w-5" />
-            Skills
+
+          <Link to="/sessions" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors font-medium">
+            <Clock className="h-5 w-5" /> Sessions
+          </Link>
+          <Link to="/goals" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors font-medium">
+            <Target className="h-5 w-5" /> Goals
+          </Link>
+          <Link to="/skills" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors font-medium">
+            <Code2 className="h-5 w-5" /> Skills
           </Link>
 
           <p className="px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 mt-8">Account</p>
+          <Link to="/profile" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors font-medium">
+            <User className="h-5 w-5" /> Profile
+          </Link>
+          <Link to="/settings" className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-indigo-50 text-indigo-700 font-medium transition-colors">
+            <SettingsIcon className="h-5 w-5 text-indigo-600" /> Settings
+          </Link>
+          
+
+          {/* <p className="px-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 mt-8">Account</p>
           <Link to="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors font-medium">
             <Settings className="h-5 w-5" />
             Settings
-          </Link>
+          </Link> */}
         </nav>
 
         <div className="p-4 border-t border-slate-200">
@@ -156,13 +175,13 @@ export const Skills = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 bg-slate-50/50 relative h-screen">
-        <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 z-10 flex-shrink-0">
+        <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 z-10 shrink-0">
           <h1 className="text-lg font-semibold text-slate-800">Skill Tree</h1>
           <div className="flex items-center gap-4">
             <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-100">
               <Bell className="h-5 w-5" />
             </button>
-            <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 shadow-sm" />
+            <div className="h-8 w-8 rounded-full bg-linear-to-tr from-indigo-500 to-purple-500 shadow-sm" />
           </div>
         </header>
 
@@ -171,9 +190,9 @@ export const Skills = () => {
             
             {/* Top Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center min-h-[300px]">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col items-center min-h-75">
                 <h3 className="font-semibold text-slate-800 self-start mb-2">Skill Radar</h3>
-                <div className="w-full flex-1 min-h-[250px]">
+                <div className="w-full flex-1 min-h-62.5">
                   <ResponsiveContainer width="100%" height="100%">
                     <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
                       <PolarGrid stroke="#e2e8f0" />
@@ -187,7 +206,7 @@ export const Skills = () => {
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                 <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 border border-indigo-400 rounded-xl p-6 text-white relative overflow-hidden">
+                 <div className="bg-linear-to-br from-indigo-500 to-indigo-600 border border-indigo-400 rounded-xl p-6 text-white relative overflow-hidden">
                     <Trophy className="h-8 w-8 text-indigo-200 mb-4" />
                     <h2 className="text-3xl font-bold">9,600 XP</h2>
                     <p className="text-indigo-100 text-sm mb-6">Level 42 Full-Stack Dev</p>
