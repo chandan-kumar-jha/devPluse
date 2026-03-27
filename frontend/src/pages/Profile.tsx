@@ -2,12 +2,13 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { 
   Terminal, LayoutDashboard, Target, Code2, Bell, Settings as SettingsIcon, LogOut, Plus, ChevronDown, User,
-  Camera,  Globe, Clock, Calendar, Activity, CheckCircle2, Trophy
+  Camera, MapPin, Globe, Clock, Calendar, Activity, CheckCircle2, Trophy
 } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useLocation } from "react-router";
 
 export const Profile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const handleLogout = () => navigate("/");
 
   const [isSaved, setIsSaved] = useState(false);
@@ -63,7 +64,7 @@ export const Profile = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 bg-slate-50/50 h-screen overflow-hidden">
         {/* Header */}
-        <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 z-10 shrink-0">
+        <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 z-10 flex-shrink-0">
           <div className="flex items-center md:hidden">
              <Terminal className="text-indigo-600 h-6 w-6" />
           </div>
@@ -75,7 +76,7 @@ export const Profile = () => {
               <Bell className="h-5 w-5" />
             </Link>
             <Link to="/profile" className="flex items-center gap-2 pl-4 border-l border-slate-200 cursor-pointer group">
-              <div className="h-8 w-8 rounded-full bg-linear-to-tr from-indigo-500 to-purple-500 shadow-sm" />
+              <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 shadow-sm" />
               <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
             </Link>
           </div>
@@ -87,10 +88,10 @@ export const Profile = () => {
             
             {/* Banner & Avatar Upload */}
             <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden relative">
-               <div className="h-32 bg-linear-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+               <div className="h-32 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
                <div className="px-6 pb-6 pt-0 relative flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-12">
                   <div className="relative group cursor-pointer">
-                     <div className="h-24 w-24 rounded-full border-4 border-white bg-linear-to-tr from-indigo-500 to-purple-500 shadow-lg overflow-hidden">
+                     <div className="h-24 w-24 rounded-full border-4 border-white bg-gradient-to-tr from-indigo-500 to-purple-500 shadow-lg overflow-hidden">
                         {/* Placeholder for avatar image */}
                      </div>
                      <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -154,7 +155,7 @@ export const Profile = () => {
                        <input type="text" defaultValue="Full Stack Engineer" className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors" />
                      </div>
                      <div>
-                       <label className="text-sm font-medium text-slate-700 mb-1 flex items-center gap-1.5"><Globe className="h-4 w-4 text-slate-400" /> GitHub Username Link</label>
+                       <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1.5"><Globe className="h-4 w-4 text-slate-400" /> GitHub Username Link</label>
                        <div className="flex">
                          <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-200 bg-slate-100 text-slate-500 text-sm">github.com/</span>
                          <input type="text" defaultValue="janedev" className="flex-1 min-w-0 px-3 py-2 bg-slate-50 border border-slate-200 rounded-r-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors" />
@@ -168,7 +169,7 @@ export const Profile = () => {
                        <textarea rows={4} defaultValue="Building awesome web apps and mastering React. Always learning." className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors resize-none" />
                      </div>
                      <div>
-                       <label className="text-sm font-medium text-slate-700 mb-1 flex items-center gap-1.5"><Clock className="h-4 w-4 text-slate-400" /> Timezone Preference</label>
+                       <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-1.5"><Clock className="h-4 w-4 text-slate-400" /> Timezone Preference</label>
                        <select className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700 appearance-none cursor-pointer">
                          <option>Pacific Time (PT)</option>
                          <option>Eastern Time (ET)</option>

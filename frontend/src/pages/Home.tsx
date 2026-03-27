@@ -14,7 +14,7 @@ export const Home = () => {
         <HeroSection />
         
         <div id="features" className="bg-zinc-950 relative border-t border-zinc-900">
-          <div className="absolute inset-0 bg-gradient-to-b from-zinc-900/50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-linear-to-b from-zinc-900/50 to-transparent pointer-events-none" />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-10 text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-white">
               Everything you need. Nothing you don't.

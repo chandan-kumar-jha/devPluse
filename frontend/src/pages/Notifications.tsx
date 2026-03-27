@@ -4,7 +4,7 @@ import {
   Terminal, LayoutDashboard, Target, Code2, Bell, Settings as SettingsIcon, LogOut, ChevronDown, User,
   Mail, Flame, TrendingUp, Trophy, CheckCircle2, Clock
 } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useLocation } from "react-router";
 
 type Notification = {
   id: string;
@@ -44,6 +44,7 @@ const getIconBg = (type: string) => {
 
 export const Notifications = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const handleLogout = () => navigate("/");
 
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
@@ -104,7 +105,7 @@ export const Notifications = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 bg-slate-50/50 h-screen overflow-hidden">
         {/* Header */}
-        <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 z-10 shrink-0">
+        <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 z-10 flex-shrink-0">
           <div className="flex items-center md:hidden">
              <Terminal className="text-indigo-600 h-6 w-6" />
           </div>
@@ -117,7 +118,7 @@ export const Notifications = () => {
               {notifications.some(n=>!n.read) && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-red-500 border-2 border-indigo-50"></span>}
             </Link>
             <Link to="/profile" className="flex items-center gap-2 pl-4 border-l border-slate-200 cursor-pointer group">
-              <div className="h-8 w-8 rounded-full bg-linear-to-tr from-indigo-500 to-purple-500 shadow-sm" />
+              <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 shadow-sm" />
               <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
             </Link>
           </div>
@@ -155,7 +156,7 @@ export const Notifications = () => {
                         className={`p-5 flex gap-4 transition-colors relative group ${notification.read ? 'bg-white' : 'bg-indigo-50/30'}`}
                       >
                          {!notification.read && <div className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-500 rounded-r-full"></div>}
-                         <div className={`w-10 h-10 rounded-full flex items-center justify-center border shrink-0 mt-1 ${getIconBg(notification.type)}`}>
+                         <div className={`w-10 h-10 rounded-full flex items-center justify-center border flex-shrink-0 mt-1 ${getIconBg(notification.type)}`}>
                             {getIcon(notification.type)}
                          </div>
                          <div className="flex-1 min-w-0">

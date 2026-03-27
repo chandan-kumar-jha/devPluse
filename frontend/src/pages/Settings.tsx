@@ -1,15 +1,13 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { 
-  Terminal, LayoutDashboard, Target, Code2, Bell, Settings as SettingsIcon, LogOut, ChevronDown, User,
+  Terminal, LayoutDashboard, Target, Code2, Bell, Settings as SettingsIcon, LogOut,  ChevronDown, User,
   Moon, Sun, Download, Database, AlertTriangle, Link2, Lock, Mail,  Clock
 } from "lucide-react";
 import { Link, useNavigate } from "react-router";
-import { FaGithub } from "react-icons/fa";
 
 export const Settings = () => {
   const navigate = useNavigate();
-  
   const handleLogout = () => navigate("/");
 
   const [theme, setTheme] = useState("light");
@@ -61,7 +59,7 @@ export const Settings = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 bg-slate-50/50 h-screen overflow-hidden">
         {/* Header */}
-        <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 z-10 shrink-0">
+        <header className="h-16 border-b border-slate-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 z-10 flex-shrink-0">
           <div className="flex items-center md:hidden">
              <Terminal className="text-indigo-600 h-6 w-6" />
           </div>
@@ -73,7 +71,7 @@ export const Settings = () => {
               <Bell className="h-5 w-5" />
             </Link>
             <Link to="/profile" className="flex items-center gap-2 pl-4 border-l border-slate-200 cursor-pointer group">
-              <div className="h-8 w-8 rounded-full bg-linear-to-tr from-indigo-500 to-purple-500 shadow-sm" />
+              <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 shadow-sm" />
               <ChevronDown className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
             </Link>
           </div>
@@ -126,8 +124,8 @@ export const Settings = () => {
                         <p className="text-xs text-slate-500">{item.desc}</p>
                       </div>
                       <div className="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
-                          <input type="checkbox" checked={emails[item.key as keyof typeof emails]} onChange={() => setEmails(e => ({...e, [item.key]: !e[item.key as keyof typeof emails]}))} className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300 checked:right-0 checked:border-indigo-500 checked:bg-indigo-500 transition-all duration-300" style={{ right: emails[item.key as keyof typeof emails] ? '0' : '1.25rem' }}/>
-                          <div className={`toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer ${emails[item.key as keyof typeof emails] ? 'bg-indigo-200' : ''}`}></div>
+                          <input type="checkbox" checked={(emails as any)[item.key]} onChange={() => setEmails(e => ({...e, [item.key]: !e[item.key as keyof typeof emails]}))} className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-300 checked:right-0 checked:border-indigo-500 checked:bg-indigo-500 transition-all duration-300" style={{ right: (emails as any)[item.key] ? '0' : '1.25rem' }}/>
+                          <div className={`toggle-label block overflow-hidden h-5 rounded-full bg-slate-300 cursor-pointer ${(emails as any)[item.key] ? 'bg-indigo-200' : ''}`}></div>
                       </div>
                     </label>
                   ))}
@@ -160,7 +158,7 @@ export const Settings = () => {
                    <div className="p-6 space-y-4">
                       <div className="flex items-center justify-between p-3 border border-slate-200 rounded-xl">
                          <div className="flex items-center gap-3">
-                           <FaGithub className="h-5 w-5 text-slate-800" />
+                           <Github className="h-5 w-5 text-slate-800" />
                            <span className="text-sm font-medium text-slate-700">GitHub</span>
                          </div>
                          <button className="text-xs font-semibold text-slate-500 hover:text-red-600 transition-colors">Disconnect</button>

@@ -1,8 +1,8 @@
 import { createBrowserRouter } from "react-router";
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
-import { Register } from "./pages/Register";
-import { Dashboard } from "./pages/Dashboard";
+import { Register } from "./pages/Register/index";
+import { Dashboard } from "./pages/Dashboard/index";
 import { Skills } from "./pages/Skills";
 import { Goals } from "./pages/Goals";
 import { Sessions } from "./pages/Sessions";
@@ -10,9 +10,7 @@ import { Settings } from "./pages/Settings";
 import { Profile } from "./pages/Profile";
 import { Notifications } from "./pages/Notifications";
 import { Layout } from "./layout/Layout";
-
 export const router = createBrowserRouter([
-  // ── Public Routes ────────────────────────────────
   {
     path: "/",
     Component: Home,
@@ -25,11 +23,12 @@ export const router = createBrowserRouter([
     path: "/register",
     Component: Register,
   },
-
-  // ── Protected Routes (Wrapped in Layout) ─────────
   {
+    /* Yahan magic hota hai: Layout ko main wrapper banate hain.
+       Saare protected routes iske children honge.
+    */
     path: "/",
-    Component: Layout, // This is the parent
+    Component: Layout, 
     children: [
       {
         path: "dashboard",
