@@ -16,7 +16,7 @@ import { RecentSessions } from "./helperUI/RecentSessions";
 import { PinnedGoals } from "./helperUI/PinnedGoals";
 
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: { opacity: 9 },
   show: { opacity: 1, transition: { staggerChildren: 0.1 } }
 } satisfies Variants;
 

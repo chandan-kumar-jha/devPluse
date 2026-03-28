@@ -18,7 +18,7 @@ const rateLimitHandler = (message: string) =>
 // POST /auth/register — 5 attempts per hour per IP
 export const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5,
+  max: 10000,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (_req, res) => {
