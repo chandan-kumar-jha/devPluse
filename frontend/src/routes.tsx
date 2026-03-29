@@ -5,10 +5,10 @@ import { Register } from "./pages/Register/index";
 import { Dashboard } from "./pages/Dashboard/index";
 import { Skills } from "./pages/Skills";
 import { Goals } from "./pages/Goals";
-import { Sessions } from "./pages/Sessions";
 import { Settings } from "./pages/Settings";
 import { Profile } from "./pages/Profile";
 import { Notifications } from "./pages/Notifications";
+import { Sessions } from "./pages/Sessions/Sessions";
 import { Layout } from "./layout/Layout";
 export const router = createBrowserRouter([
   {

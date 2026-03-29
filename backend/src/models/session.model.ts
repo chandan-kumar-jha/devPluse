@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema, CallbackWithoutResultAndOptionalError } from 'mongoose'
+import mongoose, { Document, Schema } from 'mongoose'
 
 // ── TypeScript interface ───────────────────────────────────────────
 export interface ISession extends Document {
@@ -86,15 +86,7 @@ sessionSchema.index({ userId: 1, tags: 1 })
 // keyword search on title and notes
 sessionSchema.index(
   { title: 'text', notes: 'text' },
-  { weights: { title: 10, notes: 5 } } // title matches ranked higher
+  { weights: { title: 10, notes: 5 } } 
 )
-
-//  ── Sanitise tags before save ──────────────────────────────────────
-// sessionSchema.pre('validate', function (this: ISession, next: any) {
-//   if (this.tags && this.tags.length > 0) {
-//     this.tags = [...new Set(this.tags.map((tag) => tag.toLowerCase().trim()))]
-//   }
-//   next()
-// })
 
 export const Session = mongoose.model<ISession>('Session', sessionSchema)
