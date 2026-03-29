@@ -10,6 +10,7 @@ import { SessionGroup } from "./SessionGroup";
 import { SessionFormModal } from "./SessionFormModal";
 
 export const Sessions = () => {
+
   // ── Store ──────────────────────────────────────────────────────
   const {
     sessions,
@@ -62,6 +63,15 @@ export const Sessions = () => {
     }
     return () => clearInterval(interval);
   }, [isTimerRunning]);
+
+  const [query, setQuery] = useState("");
+  const [activeTags, setActiveTags] = useState<string[]>([]);
+
+  const handleToggle = (tag: string) => {
+    setActiveTags(prev => 
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
 
   // ── Handlers ───────────────────────────────────────────────────
   const openLogModal = (session?: Session) => {
