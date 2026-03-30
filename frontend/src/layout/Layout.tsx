@@ -4,7 +4,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '../store/useAuthStore'; 
 import { logoutApi } from '../api/auth.api';
-import { SidebarContent } from '../components/SidebarContent'; // Import here
+import { SidebarContent } from '../components/SidebarContent'; 
 
 export const Layout = () => {
   const navigate = useNavigate();
