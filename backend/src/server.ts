@@ -58,10 +58,16 @@ app.use('/settings', settingsRoutes)
 if (process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../../frontend/dist");
   app.use(express.static(frontendPath));
-  
+
+  // ✅ Explicitly handle root
+  app.get("/", (req: Request, res: Response) => {
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
+
+  // ✅ Handle all other non-API routes
   app.get("*splat", (req: Request, res: Response) => {
-  res.sendFile(path.join(frontendPath, "index.html"));
-});
+    res.sendFile(path.join(frontendPath, "index.html"));
+  });
 }
 
 // ── 404 handler ───────────────────────────────────────────────────
