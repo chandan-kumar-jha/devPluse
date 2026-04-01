@@ -30,7 +30,6 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, Postman, curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -57,7 +56,8 @@ app.get('/health', (_req: Request, res: Response) => {
   })
 })
 
-// ── Routes ────────────────────────────────────────────────────────
+// ── API Routes ────────────────────────────────────────────────────
+// Note: If you add "/api" prefix here, it makes routing much safer
 app.use('/auth', authRoutes)
 app.use('/profile', profileRoutes)
 app.use('/sessions', sessionRoutes)
@@ -67,32 +67,51 @@ app.use('/dashboard', dashboardRoutes)
 app.use('/notifications', notificationRoutes) 
 app.use('/settings', settingsRoutes)
 
+// ── Production Frontend Logic ─────────────────────────────────────
 if (process.env.NODE_ENV === "production") {
-  const frontendPath = path.join(__dirname, "../../frontend/dist");
+  // Path to your frontend build folder
+  const frontendPath = path.resolve(process.cwd(), "..", "frontend", "dist");
+  
+  console.log("Serving frontend from:", frontendPath); // Log this to verify!
+
+  // 1. Serve static files
   app.use(express.static(frontendPath));
 
-  // Catch-all → serve React app
-  app.use((_req: Request, res: Response) => {
-    res.sendFile(path.join(frontendPath, "index.html"));
+  /**
+   * CATCH-ALL ROUTE
+   * This is the "magic fix" for mobile refreshes. 
+   * It tells Express: "If it's not a health check or an API route, 
+   * just give them the React app and let React Router handle the URL."
+   */
+ app.use((req: Request, res: Response, next) => {
+    // If the request is a GET and not looking for an API route
+    if (req.method === 'GET' && !req.path.startsWith('/auth') && !req.path.startsWith('/health')) {
+      return res.sendFile(path.join(frontendPath, "index.html"));
+    }
+    next();
   });
 
 } else {
-  // 404 only in development (production serves index.html instead)
+  // 404 handler for development only
   app.use((_req: Request, res: Response) => {
     res.status(404).json({ success: false, message: "Route not found" });
   });
 }
 
+// ── Error handler — MUST BE LAST ──────────────────────────────────
 app.use(errorHandler);
-// ── Error handler — must be last ──────────────────────────────────
-app.use(errorHandler)                                   // ← must be after routes
 
 const startServer = async (): Promise<void> => {
-  await connectDB()
-  app.listen(env.PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${env.PORT}`)
-    console.log(`🌍 Environment: ${env.NODE_ENV}`)
-  })
+  try {
+    await connectDB()
+    app.listen(env.PORT, () => {
+      console.log(`🚀 Server running on http://localhost:${env.PORT}`)
+      console.log(`🌍 Environment: ${env.NODE_ENV}`)
+    })
+  } catch (error) {
+    console.error("❌ Database connection failed:", error)
+    process.exit(1)
+  }
 }
 
 startServer()
