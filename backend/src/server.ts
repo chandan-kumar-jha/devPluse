@@ -58,14 +58,14 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // ── API Routes ────────────────────────────────────────────────────
 // Note: If you add "/api" prefix here, it makes routing much safer
-app.use('/auth', authRoutes)
-app.use('/profile', profileRoutes)
-app.use('/sessions', sessionRoutes)
-app.use('/goals', goalRoutes)
-app.use('/skills', skillRoutes)
-app.use('/dashboard', dashboardRoutes)
-app.use('/notifications', notificationRoutes) 
-app.use('/settings', settingsRoutes)
+app.use('/api/auth', authRoutes)
+app.use('/api/profile', profileRoutes)
+app.use('/api/sessions', sessionRoutes)
+app.use('/api/goals', goalRoutes)
+app.use('/api/skills', skillRoutes)
+app.use('/api/dashboard', dashboardRoutes)
+app.use('/api/notifications', notificationRoutes) 
+app.use('/api/settings', settingsRoutes)
 
 // ── Production Frontend Logic ─────────────────────────────────────
 if (process.env.NODE_ENV === "production") {
