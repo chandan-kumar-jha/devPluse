@@ -6,8 +6,7 @@ const isProduction = env.NODE_ENV === 'production'
 
 const BASE_COOKIE_OPTIONS = {
   httpOnly: true,                    // JS cannot read — blocks XSS
-  secure: isProduction,              // HTTPS only in production
-  sameSite: 'lax' as const,          // blocks CSRF
+   sameSite: isProduction ? ('strict' as const) : ('none' as const),        // blocks CSRF
 }
 
 // ── Access token cookie — 15 minutes ──────────────────────────────

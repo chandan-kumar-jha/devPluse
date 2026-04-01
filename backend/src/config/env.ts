@@ -10,7 +10,7 @@ const env_Schema = z.object({
     NODE_ENV: z.enum(['development', 'production', 'test']).default("development"),
     PORT : z.string().default("5000"),
     //.url() ensure karta hai valid URL ho
-    CLIENT_URL: z.string().url(),
+    CLIENT_URL: z.string().min(1, 'CLIENT_URL is required'),
     // .env me missing hai → App start nahi hogi Error: "MONGO_URI is required"
     MONGO_URI: z.string().min(1,'MONGO_URI is required' ),
     ACCESS_TOKEN_SECRET : z.string().min(40, "ACCESS_TOKEN_SECRET must be at least 40 chars"),

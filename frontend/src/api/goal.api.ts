@@ -1,18 +1,69 @@
-import { api } from "./axios"; // ✅ use your existing instance
+// src/api/goals.api.ts
+import { api } from "./axios";
 
-/**
- * 🧠 Types (API-level, refined later in Problem 3)
- */
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 export type GoalStatus = "active" | "done" | "archived";
+
+export interface Milestone {
+  _id: string;
+  title: string;
+  completed: boolean;
+  order: number;
+}
+
+export interface Goal {
+  _id: string;
+  userId: string;
+  title: string;
+  description: string | null;
+  deadline: string | null;
+  status: GoalStatus;
+  progress: number;
+  pinned: boolean;
+  category: string;
+  sessionCount: number;
+  milestones: Milestone[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GoalCounts {
+  active: number;
+  done: number;
+  archived: number;
+}
+
+export interface Pagination {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+export interface GoalsListResponse {
+  success: boolean;
+  data: {
+    goals: Goal[];
+    counts: GoalCounts;
+    pagination: Pagination;
+  };
+}
+
+export interface GoalResponse {
+  success: boolean;
+  message?: string;
+  data: { goal: Goal };
+}
 
 export interface CreateGoalPayload {
   title: string;
   description?: string;
   deadline?: string;
   category?: string;
-  milestones?: {
-    title: string;
-  }[];
+  milestones?: { title: string }[];
 }
 
 export interface UpdateGoalPayload {
@@ -23,91 +74,39 @@ export interface UpdateGoalPayload {
   status?: GoalStatus;
 }
 
-/**
- * 🚀 Goal API (Fully aligned with backend)
- */
-export const goalAPI = {
-  // ============================
-  // 📌 GOALS
-  // ============================
+// ─── API ──────────────────────────────────────────────────────────────────────
 
-  /**
-   * GET /goals
-   */
+export const goalAPI = {
+  // Goals CRUD
   getGoals: (params?: {
     page?: number;
     limit?: number;
     status?: GoalStatus;
     category?: string;
     sort?: "newest" | "oldest" | "deadline" | "progress";
-  }) => {
-    return api.get("/goals", { params });
-  },
+  }) => api.get<GoalsListResponse>("/goals", { params }),
 
-  /**
-   * GET /goals/:id
-   */
-  getGoalById: (id: string) => {
-    return api.get(`/goals/${id}`);
-  },
+  getGoalById: (id: string) => api.get<GoalResponse>(`/goals/${id}`),
 
-  /**
-   * POST /goals
-   */
-  createGoal: (data: CreateGoalPayload) => {
-    return api.post("/goals", data);
-  },
+  createGoal: (data: CreateGoalPayload) =>
+    api.post<GoalResponse>("/goals", data),
 
-  /**
-   * PATCH /goals/:id
-   */
-  updateGoal: (id: string, data: UpdateGoalPayload) => {
-    return api.patch(`/goals/${id}`, data);
-  },
+  updateGoal: (id: string, data: UpdateGoalPayload) =>
+    api.patch<GoalResponse>(`/goals/${id}`, data),
 
-  /**
-   * DELETE /goals/:id
-   */
-  deleteGoal: (id: string) => {
-    return api.delete(`/goals/${id}`);
-  },
+  deleteGoal: (id: string) => api.delete(`/goals/${id}`),
 
-  /**
-   * PATCH /goals/:id/archive
-   */
-  archiveGoal: (id: string) => {
-    return api.patch(`/goals/${id}/archive`);
-  },
+  archiveGoal: (id: string) => api.patch<GoalResponse>(`/goals/${id}/archive`),
 
-  /**
-   * PATCH /goals/:id/pin
-   */
-  togglePin: (id: string) => {
-    return api.patch(`/goals/${id}/pin`);
-  },
+  togglePin: (id: string) => api.patch<GoalResponse>(`/goals/${id}/pin`),
 
-  // ============================
-  // 📌 MILESTONES
-  // ============================
+  // Milestones
+  addMilestone: (goalId: string, title: string) =>
+    api.post<GoalResponse>(`/goals/${goalId}/milestones`, { title }),
 
-  /**
-   * POST /goals/:id/milestones
-   */
-  addMilestone: (goalId: string, title: string) => {
-    return api.post(`/goals/${goalId}/milestones`, { title });
-  },
+  toggleMilestone: (goalId: string, milestoneId: string) =>
+    api.patch<GoalResponse>(`/goals/${goalId}/milestones/${milestoneId}`),
 
-  /**
-   * PATCH /goals/:id/milestones/:mid
-   */
-  toggleMilestone: (goalId: string, milestoneId: string) => {
-    return api.patch(`/goals/${goalId}/milestones/${milestoneId}`);
-  },
-
-  /**
-   * DELETE /goals/:id/milestones/:mid
-   */
-  deleteMilestone: (goalId: string, milestoneId: string) => {
-    return api.delete(`/goals/${goalId}/milestones/${milestoneId}`);
-  },
+  deleteMilestone: (goalId: string, milestoneId: string) =>
+    api.delete<GoalResponse>(`/goals/${goalId}/milestones/${milestoneId}`),
 };

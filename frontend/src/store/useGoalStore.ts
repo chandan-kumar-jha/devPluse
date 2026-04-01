@@ -1,186 +1,273 @@
+// src/store/useGoalsStore.ts
 import { create } from "zustand";
-import { goalAPI, type GoalStatus } from "../api/goal.api";
-import toast from "react-hot-toast";
+import { devtools } from "zustand/middleware";
+import {
+  goalAPI,
+  type Goal,
+  type GoalCounts,
+  type Pagination,
+  type CreateGoalPayload,
+  type UpdateGoalPayload,
+  type GoalStatus,
+} from "../api/goal.api";
 
-export interface Milestone { _id: string; title: string; completed: boolean; order: number; }
-export interface Goal {
-  _id: string; userId: string; title: string; description?: string;
-  deadline?: string; category?: string; status: GoalStatus;
-  progress: number; pinned: boolean; sessionCount: number;
-  milestones: Milestone[]; createdAt: string; updatedAt: string;
-}
-export interface GoalCounts { active: number; done: number; archived: number; }
-export interface Pagination { total: number; page: number; limit: number; totalPages: number; hasNext: boolean; hasPrev: boolean; }
-export type SortOption = "newest" | "oldest" | "deadline" | "progress";
-interface GoalFilters { status?: GoalStatus; category?: string; sort: SortOption; page: number; limit: number; }
+// ─── State ────────────────────────────────────────────────────────────────────
 
-interface GoalState {
+interface GoalsState {
   goals: Goal[];
-  selectedGoalId: string | null;
   counts: GoalCounts;
-  pagination: Pagination;
-  filters: GoalFilters;
-  isLoadingList: boolean;
-  isMutating: boolean;
-  listError: string | null;
+  pagination: Pagination | null;
+  selectedGoalId: string | null;
+  loading: boolean;
+  actionLoading: boolean; // for mutations (create/update/delete)
+  error: string | null;
+
+  // Selectors
   selectedGoal: () => Goal | null;
-  setFilters: (filters: Partial<GoalFilters>) => void;
-  updateGoal: (id: string, payload: Partial<Goal>) => Promise<void>;
-  fetchGoals: () => Promise<void>;
-  createGoal: (payload: any) => Promise<Goal | null>;
+
+  // Actions
+  loadGoals: (params?: {
+    page?: number;
+    status?: GoalStatus;
+    category?: string;
+    sort?: "newest" | "oldest" | "deadline" | "progress";
+  }) => Promise<void>;
+
+  selectGoal: (id: string | null) => void;
+
+  createGoal: (data: CreateGoalPayload) => Promise<Goal | null>;
+  updateGoal: (id: string, data: UpdateGoalPayload) => Promise<void>;
   deleteGoal: (id: string) => Promise<void>;
+  archiveGoal: (id: string) => Promise<void>;
+  togglePin: (id: string) => Promise<void>;
+
+  // Milestones
   addMilestone: (goalId: string, title: string) => Promise<void>;
   toggleMilestone: (goalId: string, milestoneId: string) => Promise<void>;
   deleteMilestone: (goalId: string, milestoneId: string) => Promise<void>;
-  selectGoal: (id: string | null) => void;
+
+  clearError: () => void;
 }
 
-const patchGoal = (goals: Goal[], id: string, patch: Partial<Goal>): Goal[] =>
-  goals.map(g => g._id === id ? { ...g, ...patch } as Goal : g);
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-export const useGoalStore = create<GoalState>((set, get) => ({
-  goals: [],
-  selectedGoalId: null,
-  counts: { active: 0, done: 0, archived: 0 },
-  pagination: { total: 0, page: 1, limit: 20, totalPages: 0, hasNext: false, hasPrev: false },
-  filters: { sort: "newest", page: 1, limit: 20 },
-  isLoadingList: false,
-  isMutating: false,
-  listError: null,
+const errMsg = (err: unknown, fallback: string) =>
+  err instanceof Error ? err.message : fallback;
 
-  selectedGoal: () => {
-    const { goals, selectedGoalId } = get();
-    return goals.find(g => g._id === selectedGoalId) ?? null;
-  },
+/** Replace a single goal in the list by _id */
+const replaceGoal = (goals: Goal[], updated: Goal): Goal[] =>
+  goals.map((g) => (g._id === updated._id ? updated : g));
 
-  setFilters: (incoming) => {
-    set(s => ({ filters: { ...s.filters, ...incoming, page: incoming.page ?? 1 } }));
-    get().fetchGoals();
-  },
+// ─── Store ────────────────────────────────────────────────────────────────────
 
-  fetchGoals: async () => {
-    set({ isLoadingList: true, listError: null });
-    try {
-      const res = await goalAPI.getGoals(get().filters);
-      const { goals, counts, pagination } = res.data.data;
-      set({ 
-        goals, counts, pagination, isLoadingList: false,
-        selectedGoalId: get().selectedGoalId || (goals[0]?._id ?? null)
-      });
-    } catch (err: any) {
-      set({ isLoadingList: false, listError: err.response?.data?.message });
-    }
-  },
-updateGoal: async (id, payload) => {
-  // Prevent API calls on temporary IDs
-  if (id.startsWith('temp-')) return;
+export const useGoalsStore = create<GoalsState>()(
+  devtools(
+    (set, get) => ({
+      goals: [],
+      counts: { active: 0, done: 0, archived: 0 },
+      pagination: null,
+      selectedGoalId: null,
+      loading: false,
+      actionLoading: false,
+      error: null,
 
-  // 1. Save the previous state in case we need to rollback on error
-  const previousGoals = get().goals;
+      // ── Selector ────────────────────────────────────────────────────────────
+      selectedGoal: () => {
+        const { goals, selectedGoalId } = get();
+        return goals.find((g) => g._id === selectedGoalId) ?? null;
+      },
 
-  // 2. OPTIMISTIC UPDATE: Update the local goals array immediately
-  set((state) => ({
-    goals: state.goals.map((g) =>
-      g._id === id ? { ...g, ...payload } : g
-    ),
-  }));
+      // ── Load ────────────────────────────────────────────────────────────────
+      loadGoals: async (params) => {
+        set({ loading: true, error: null });
+        try {
+          const res = await goalAPI.getGoals(params);
+          const { goals, counts, pagination } = res.data.data;
+          set({
+            goals,
+            counts,
+            pagination,
+            loading: false,
+            // auto-select first goal if none selected
+            selectedGoalId:
+              get().selectedGoalId ??
+              (goals.length > 0 ? goals[0]._id : null),
+          });
+        } catch (err) {
+          set({ error: errMsg(err, "Failed to load goals"), loading: false });
+        }
+      },
 
-  try {
-    const res = await goalAPI.updateGoal(id, payload);
-    // 3. Sync with the actual server data once it returns
-    const serverGoal = res.data.data.goal;
-    set((state) => ({
-      goals: state.goals.map((g) => (g._id === id ? serverGoal : g)),
-    }));
-  } catch (err: any) {
-    // 4. ROLLBACK: If the server fails, revert to the previous state
-    set({ goals: previousGoals });
-    toast.error(err.response?.data?.message || "Update failed");
-  }
-},
+      // ── Select ──────────────────────────────────────────────────────────────
+      selectGoal: (id) => set({ selectedGoalId: id }),
 
-  createGoal: async (payload) => {
-    const tempId = `temp-${Date.now()}`;
-    const tempGoal: Goal = {
-      _id: tempId, userId: "pending", title: payload.title || "New Objective",
-      description: payload.description || "", category: payload.category || "Learning",
-      status: "active", progress: 0, pinned: false, sessionCount: 0,
-      milestones: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-    };
+      // ── Create ──────────────────────────────────────────────────────────────
+      createGoal: async (data) => {
+        set({ actionLoading: true, error: null });
+        try {
+          const res = await goalAPI.createGoal(data);
+          const newGoal = res.data.data.goal;
+          set((s) => ({
+            goals: [newGoal, ...s.goals],
+            counts: { ...s.counts, active: s.counts.active + 1 },
+            selectedGoalId: newGoal._id,
+            actionLoading: false,
+          }));
+          return newGoal;
+        } catch (err) {
+          set({ error: errMsg(err, "Failed to create goal"), actionLoading: false });
+          return null;
+        }
+      },
 
-    set((s) => ({ goals: [tempGoal, ...s.goals], selectedGoalId: tempId }));
+      // ── Update ──────────────────────────────────────────────────────────────
+      updateGoal: async (id, data) => {
+        // Optimistic
+        set((s) => ({
+          goals: s.goals.map((g) => (g._id === id ? { ...g, ...data } : g)),
+        }));
+        try {
+          const res = await goalAPI.updateGoal(id, data);
+          set((s) => ({
+            goals: replaceGoal(s.goals, res.data.data.goal),
+          }));
+        } catch (err) {
+          // reload to revert
+          get().loadGoals();
+          set({ error: errMsg(err, "Failed to update goal") });
+        }
+      },
 
-    try {
-      const res = await goalAPI.createGoal(payload);
-      const serverGoal = res.data.data.goal;
-      
-      set((s) => ({
-        goals: s.goals.map((g) => (g._id === tempId ? serverGoal : g)),
-        // Critical: Update the selection to the real ID from the server
-        selectedGoalId: serverGoal._id,
-      }));
-      return serverGoal;
-    } catch {
-      set((s) => ({ goals: s.goals.filter((g) => g._id !== tempId), selectedGoalId: null }));
-      toast.error("Failed to create goal");
-      return null;
-    }
-  },
+      // ── Delete ──────────────────────────────────────────────────────────────
+      deleteGoal: async (id) => {
+        const prev = get().goals;
+        const remaining = prev.filter((g) => g._id !== id);
+        const deletedGoal = prev.find((g) => g._id === id);
+        set((s) => ({
+          goals: remaining,
+          selectedGoalId:
+            s.selectedGoalId === id
+              ? (remaining[0]?._id ?? null)
+              : s.selectedGoalId,
+          counts: deletedGoal
+            ? {
+                ...s.counts,
+                [deletedGoal.status]:
+                  Math.max(0, s.counts[deletedGoal.status as keyof typeof s.counts] - 1),
+              }
+            : s.counts,
+        }));
+        try {
+          await goalAPI.deleteGoal(id);
+        } catch (err) {
+          set({ goals: prev, error: errMsg(err, "Failed to delete goal") });
+        }
+      },
 
-  deleteGoal: async (id) => {
-    if (id.startsWith('temp-')) {
-        set(s => ({ goals: s.goals.filter(g => g._id !== id), selectedGoalId: null }));
-        return;
-    }
-    set({ isMutating: true });
-    try {
-      await goalAPI.deleteGoal(id);
-      set(s => {
-        const remaining = s.goals.filter(g => g._id !== id);
-        return { goals: remaining, isMutating: false, selectedGoalId: remaining[0]?._id ?? null };
-      });
-      toast.success("Goal Deleted");
-    } catch { set({ isMutating: false }); }
-  },
+      // ── Archive ─────────────────────────────────────────────────────────────
+      archiveGoal: async (id) => {
+        try {
+          const res = await goalAPI.archiveGoal(id);
+          set((s) => ({
+            goals: replaceGoal(s.goals, res.data.data.goal),
+            counts: {
+              ...s.counts,
+              active: Math.max(0, s.counts.active - 1),
+              archived: s.counts.archived + 1,
+            },
+          }));
+        } catch (err) {
+          set({ error: errMsg(err, "Failed to archive goal") });
+        }
+      },
 
-  addMilestone: async (goalId, title) => {
-    if (goalId.startsWith('temp-')) return;
-    try {
-      const res = await goalAPI.addMilestone(goalId, title);
-      set(s => ({ goals: patchGoal(s.goals, goalId, res.data.data.goal) }));
-    } catch { toast.error("Failed to add milestone"); }
-  },
+      // ── Pin ─────────────────────────────────────────────────────────────────
+      togglePin: async (id) => {
+        // Optimistic
+        set((s) => ({
+          goals: s.goals.map((g) =>
+            g._id === id ? { ...g, pinned: !g.pinned } : g
+          ),
+        }));
+        try {
+          const res = await goalAPI.togglePin(id);
+          set((s) => ({
+            goals: replaceGoal(s.goals, res.data.data.goal),
+          }));
+        } catch (err) {
+          set((s) => ({
+            goals: s.goals.map((g) =>
+              g._id === id ? { ...g, pinned: !g.pinned } : g
+            ),
+            error: errMsg(err, "Failed to pin goal"),
+          }));
+        }
+      },
 
-  toggleMilestone: async (goalId, milestoneId) => {
-    if (goalId.startsWith('temp-')) return;
-    const prev = get().goals;
-    set(s => ({
-      goals: s.goals.map(g => {
-        if (g._id !== goalId) return g;
-        const milestones = g.milestones.map(m => m._id === milestoneId ? { ...m, completed: !m.completed } : m);
-        const progress = Math.round((milestones.filter(m => m.completed).length / (milestones.length || 1)) * 100);
-        return { ...g, milestones, progress, status: progress === 100 ? "done" : "active" };
-      })
-    }));
-    try {
-      const res = await goalAPI.toggleMilestone(goalId, milestoneId);
-      set(s => ({ goals: patchGoal(s.goals, goalId, res.data.data.goal) }));
-    } catch { set({ goals: prev }); }
-  },
+      // ── Milestones ──────────────────────────────────────────────────────────
+      addMilestone: async (goalId, title) => {
+        try {
+          const res = await goalAPI.addMilestone(goalId, title);
+          set((s) => ({
+            goals: replaceGoal(s.goals, res.data.data.goal),
+          }));
+        } catch (err) {
+          set({ error: errMsg(err, "Failed to add milestone") });
+        }
+      },
 
-  deleteMilestone: async (goalId, milestoneId) => {
-    if (goalId.startsWith('temp-')) return;
-    const prev = get().goals;
-    set(s => ({
-      goals: s.goals.map(g => {
-        if (g._id !== goalId) return g;
-        const ms = g.milestones.filter(m => m._id !== milestoneId);
-        const prog = ms.length ? Math.round((ms.filter(m => m.completed).length / ms.length) * 100) : 0;
-        return { ...g, milestones: ms, progress: prog };
-      })
-    }));
-    try { await goalAPI.deleteMilestone(goalId, milestoneId); } 
-    catch { set({ goals: prev }); }
-  },
-  selectGoal: (id) => set({ selectedGoalId: id })
-}));
+      toggleMilestone: async (goalId, milestoneId) => {
+        // Optimistic
+        set((s) => ({
+          goals: s.goals.map((g) =>
+            g._id === goalId
+              ? {
+                  ...g,
+                  milestones: g.milestones.map((m) =>
+                    m._id === milestoneId
+                      ? { ...m, completed: !m.completed }
+                      : m
+                  ),
+                }
+              : g
+          ),
+        }));
+        try {
+          const res = await goalAPI.toggleMilestone(goalId, milestoneId);
+          set((s) => ({
+            goals: replaceGoal(s.goals, res.data.data.goal),
+          }));
+        } catch (err) {
+          get().loadGoals();
+          set({ error: errMsg(err, "Failed to toggle milestone") });
+        }
+      },
+
+      deleteMilestone: async (goalId, milestoneId) => {
+        // Optimistic
+        set((s) => ({
+          goals: s.goals.map((g) =>
+            g._id === goalId
+              ? {
+                  ...g,
+                  milestones: g.milestones.filter((m) => m._id !== milestoneId),
+                }
+              : g
+          ),
+        }));
+        try {
+          const res = await goalAPI.deleteMilestone(goalId, milestoneId);
+          set((s) => ({
+            goals: replaceGoal(s.goals, res.data.data.goal),
+          }));
+        } catch (err) {
+          get().loadGoals();
+          set({ error: errMsg(err, "Failed to delete milestone") });
+        }
+      },
+
+      clearError: () => set({ error: null }),
+    }),
+    { name: "GoalsStore" }
+  )
+);

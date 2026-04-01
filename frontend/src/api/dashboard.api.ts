@@ -1,10 +1,16 @@
-import axios from "axios";
+// lib/api/dashboardApi.ts
+import {api} from './axios'
+// ─── Types ────────────────────────────────────────────────────────────────────
+import  type{ DashboardResponse, DateRange } from '../types/dashboard.type';
+// ─── API ──────────────────────────────────────────────────────────────────────
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
-export const fetchDashboardStats = async () => {
-  const { data } = await axios.get(`${API_URL}/dashboard`, {
-    withCredentials: true,
+export const fetchDashboard = async (
+  range: DateRange = "30d"
+): Promise<DashboardResponse> => {
+  const { data } = await api.get<DashboardResponse>("/dashboard", {
+    params: { range },
   });
   return data;
 };
+
+export default api;
