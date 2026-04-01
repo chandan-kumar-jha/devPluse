@@ -71,22 +71,19 @@ if (process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../../frontend/dist");
   app.use(express.static(frontendPath));
 
-  // ✅ Explicitly handle root
-  app.get("/", (req: Request, res: Response) => {
+  // Catch-all → serve React app
+  app.use((_req: Request, res: Response) => {
     res.sendFile(path.join(frontendPath, "index.html"));
   });
 
-  // ✅ Handle all other non-API routes
-  app.get("*splat", (req: Request, res: Response) => {
-    res.sendFile(path.join(frontendPath, "index.html"));
+} else {
+  // 404 only in development (production serves index.html instead)
+  app.use((_req: Request, res: Response) => {
+    res.status(404).json({ success: false, message: "Route not found" });
   });
 }
 
-// ── 404 handler ───────────────────────────────────────────────────
-app.use((_req: Request, res: Response) => {
-  res.status(404).json({ success: false, message: 'Route not found' })
-})
-
+app.use(errorHandler);
 // ── Error handler — must be last ──────────────────────────────────
 app.use(errorHandler)                                   // ← must be after routes
 
