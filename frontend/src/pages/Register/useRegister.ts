@@ -75,10 +75,10 @@ export const useRegister = () => {
   > = useMutation({
     mutationFn: verifyOTPApi,
     onSuccess: (response) => {
-      const userData = response.data?.user
-      if (userData) setUser(userData)
-      navigate('/dashboard')
-    },
+  const userData = response.data?.data?.user  // ✅ matches backend shape
+  if (userData) setUser(userData)
+  navigate('/dashboard')
+},
     onError: (error) => {
       setOtpError(error.response?.data?.message || 'Invalid OTP')
     },
