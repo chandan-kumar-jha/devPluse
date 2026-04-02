@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, Menu } from 'lucide-react';
+import {  Menu } from 'lucide-react';
 import { Outlet, useNavigate, useLocation, Link } from 'react-router';
 import { useMutation } from '@tanstack/react-query';
 import { useAuthStore } from '../store/useAuthStore'; 
@@ -78,10 +78,7 @@ export const Layout = () => {
           </div>
           
           <div className="flex items-center gap-2 md:gap-4">
-            <button className="relative p-2 text-slate-400 hover:text-slate-600 rounded-full">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
-            </button>
+           
 
             {/* Dynamic Avatar Link */}
             <Link 
@@ -99,7 +96,7 @@ export const Layout = () => {
                   }}
                 />
               ) : (
-                <div className="h-full w-full bg-gradient-to-tr from-indigo-500 to-purple-500" />
+                <div className="h-full w-full bg-linear-to-tr from-indigo-500 to-purple-500" />
               )}
             </Link>
           </div>
