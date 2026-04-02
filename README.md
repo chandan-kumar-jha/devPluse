@@ -1,13 +1,12 @@
 Here's a clean GitHub README for DevPulse:
 
 ---
+<img width="1871" height="898" alt="image" src="https://github.com/user-attachments/assets/69bf1dda-88f1-4052-9c9e-2a5204743ae0" />
 
 ```markdown
 # DevPulse
 
 A full-stack developer progress tracker. Log sessions, set goals, track skills, and visualize your growth over time.
-
-![Dashboard](https://github.com/user-attachments/assets/7667b219-c81e-4131-bc3e-799cc042f780)
 
 ## Features
 
