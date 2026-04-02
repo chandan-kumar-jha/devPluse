@@ -2,7 +2,6 @@ import { motion } from "motion/react";
 import { Terminal, ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { FaGithub } from "react-icons/fa";
 import { useAuthStore } from "../store/useAuthStore";
 import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
@@ -154,29 +153,7 @@ export const Login = () => {
             </div>
           </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-zinc-800" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-zinc-900 text-zinc-500">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full inline-flex justify-center py-2.5 px-4 border border-zinc-700 rounded-lg shadow-sm bg-zinc-900/50 text-sm font-medium text-white hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-zinc-500 transition-all"
-              >
-                <FaGithub className="h-5 w-5 mr-2" />
-                GitHub
-              </motion.button>
-            </div>
-          </div>
+        
         </div>
       </motion.div>
     </div>
