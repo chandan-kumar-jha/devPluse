@@ -72,7 +72,7 @@ export const sendOTPEmail = async (
 ): Promise<{ success: boolean; error?: string }> => {
   try {
     const info = await transporter.sendMail({
-      from: `"DevPulse" <${process.env.BREVO_USER}>`,
+     from: `"DevPulse" <projectman884@gmail.com>`, // ✅ your real email,
       to: toEmail,
       subject: "Your DevPulse login code",
       html: getOTPTemplate(name, otp),

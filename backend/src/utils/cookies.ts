@@ -8,10 +8,12 @@ const isProduction = env.NODE_ENV === 'production'
 const sameSite: CookieOptions['sameSite'] = isProduction ? 'none' : 'lax'
 
 // ── BASE COOKIE ─────────────────────────────────────
+
+
 const BASE_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
-  sameSite: 'none',   // 🔥 CHANGE THIS
-  secure: false,      // ⚠️ keep false for localhost
+  sameSite: isProduction ? 'none' : 'lax', // 🔥 key fix
+  secure: isProduction,                   // 🔥 key fix
   path: '/',
 }
 
