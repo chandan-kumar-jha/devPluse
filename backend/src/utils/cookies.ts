@@ -1,29 +1,34 @@
-import { Response } from 'express'
+import { Response, CookieOptions } from 'express'
 import { env } from '../config/env'
 
-// ── Cookie config ──────────────────────────────────────────────────
+// ── ENV ─────────────────────────────────────────────
 const isProduction = env.NODE_ENV === 'production'
 
-const BASE_COOKIE_OPTIONS = {
+// ✅ FORCE correct type
+const sameSite: CookieOptions['sameSite'] = isProduction ? 'none' : 'lax'
+
+// ── BASE COOKIE ─────────────────────────────────────
+const BASE_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: false,
+  sameSite,              // ✅ typed correctly
+  secure: isProduction,  // ✅ required for production
   path: '/',
 }
-// ── Access token cookie — 15 minutes ──────────────────────────────
-const ACCESS_COOKIE_OPTIONS = {
+
+// ── ACCESS TOKEN ────────────────────────────────────
+const ACCESS_COOKIE_OPTIONS: CookieOptions = {
   ...BASE_COOKIE_OPTIONS,
-  maxAge: 15 * 60 * 1000,            // 15 min in milliseconds
+  maxAge: 15 * 60 * 1000,
 }
 
-// ── Refresh token cookie — 7 days ─────────────────────────────────
-const REFRESH_COOKIE_OPTIONS = {
+// ── REFRESH TOKEN ───────────────────────────────────
+const REFRESH_COOKIE_OPTIONS: CookieOptions = {
   ...BASE_COOKIE_OPTIONS,
-  maxAge: 7 * 24 * 60 * 60 * 1000,  // 7 days in milliseconds
-  path: '/auth/refresh',             // only sent to refresh endpoint
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: '/api/auth/refresh', // ✅ IMPORTANT (fix path)
 }
 
-// ── Set both cookies ───────────────────────────────────────────────
+// ── SET COOKIES ─────────────────────────────────────
 export const setAuthCookies = (
   res: Response,
   accessToken: string,
@@ -33,17 +38,12 @@ export const setAuthCookies = (
   res.cookie('refreshToken', refreshToken, REFRESH_COOKIE_OPTIONS)
 }
 
-// ── Clear both cookies ─────────────────────────────────────────────
+// ── CLEAR COOKIES ───────────────────────────────────
 export const clearAuthCookies = (res: Response): void => {
-  res.clearCookie('accessToken', {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: 'lax' as const,
-  })
+  res.clearCookie('accessToken', BASE_COOKIE_OPTIONS)
+
   res.clearCookie('refreshToken', {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: 'lax' as const,
-    path: '/auth/refresh',           // must match the path it was set with
+    ...BASE_COOKIE_OPTIONS,
+    path: '/api/auth/refresh', // must match exactly
   })
 }
