@@ -16,7 +16,9 @@ const env_Schema = z.object({
     ACCESS_TOKEN_SECRET : z.string().min(40, "ACCESS_TOKEN_SECRET must be at least 40 chars"),
     REFRESH_TOKEN_SECRET : z.string().min(40, "REFRESH_TOKEN_SECRET must be at least 40 chars"),
 
-   RESEND_API_KEY: z.string(),
+   
+   BREVO_USER:z.string(),
+   BREVO_PASS:z.string(),
 
     CLOUDINARY_CLOUD_NAME: z.string().min(1, 'CLOUDINARY_CLOUD_NAME is required'),
     CLOUDINARY_API_KEY: z.string().min(1, 'CLOUDINARY_API_KEY is required'),
