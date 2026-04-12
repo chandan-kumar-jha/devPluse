@@ -8,12 +8,12 @@ const isProduction = env.NODE_ENV === 'production'
 const sameSite: CookieOptions['sameSite'] = isProduction ? 'none' : 'lax'
 
 // ── BASE COOKIE ─────────────────────────────────────
-
 const BASE_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
-  sameSite: isProduction ? 'none' : 'lax',
-  secure: isProduction,   // MUST be true in prod
+  sameSite: 'none',
+  secure: true,
   path: '/',
+  domain: '.onrender.com', // 🔥 ADD THIS
 }
 
 // ── ACCESS TOKEN ────────────────────────────────────
