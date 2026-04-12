@@ -9,7 +9,6 @@ const sameSite: CookieOptions['sameSite'] = isProduction ? 'none' : 'lax'
 
 // ── BASE COOKIE ─────────────────────────────────────
 
-
 const BASE_COOKIE_OPTIONS: CookieOptions = {
   httpOnly: true,
   sameSite: isProduction ? 'none' : 'lax',
