@@ -6,8 +6,8 @@ const isProduction = env.NODE_ENV === 'production'
 
 const BASE_COOKIE_OPTIONS = {
   httpOnly: true,
-  sameSite: 'lax' as const,
-  secure: false,
+  sameSite: isProduction ? 'none' : 'lax',
+secure: isProduction,
   path: '/',
 }
 // ── Access token cookie — 15 minutes ──────────────────────────────
