@@ -19,7 +19,7 @@ import dashboardRoutes from './routes/dashboard.routes'
 import path from "path";
 
 const app = express()
-
+app.set('trust proxy', 1)
 app.use(requestId)
 
 const allowedOrigins = [
