@@ -17,6 +17,12 @@ export interface UpdateProfilePayload {
   timezone?: string;
   avatarUrl?: string | null;
 }
+// types/api.types.ts
+
+export type LogoutResponse = {
+  success: boolean
+  message: string
+}
 
 // Response types for Profile and Avatar
 export type ProfileResponse = ApiResponse<{ user: UserProfile }>;

@@ -7,6 +7,8 @@ import { useProfileStore } from '../store/useProfilestore'; // Import Profile St
 import { logoutApi } from '../api/auth.api';
 import { SidebarContent } from '../components/SidebarContent'; 
 import { Toaster } from 'react-hot-toast';
+import toast from "react-hot-toast";
+import type { LogoutResponse } from '../types/api.types';
 
 export const Layout = () => {
   const navigate = useNavigate();
@@ -26,18 +28,28 @@ export const Layout = () => {
     }
   }, [profile, loadProfile]);
 
-  const logoutMutation = useMutation({
-    mutationFn: logoutApi,
-    onSuccess: () => {
-      logout();
-      navigate('/login');
-    },
-    onError: () => {
-      logout();
-      navigate('/login');
-    },
-  });
+const logoutMutation = useMutation<LogoutResponse, Error>({
+  mutationFn: logoutApi,
 
+  onSuccess: () => {
+  logout();
+  useProfileStore.getState().resetProfile();
+
+  toast.success("Logged out");
+
+  // ✅ wait one tick
+  setTimeout(() => {
+    navigate("/register", { replace: true });
+  }, 0);
+},
+
+  onError: () => {
+    logout();
+    useProfileStore.getState().resetProfile();
+
+    navigate("/register", { replace: true });
+  },
+});
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans relative">
       {/* Desktop Sidebar */}

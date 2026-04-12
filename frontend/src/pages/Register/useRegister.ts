@@ -1,144 +1,171 @@
-import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation,type  UseMutationResult } from '@tanstack/react-query'
-import { AxiosError, type AxiosResponse } from 'axios'
-import { registerApi, verifyOTPApi, resendOTPApi } from '../../api/auth.api'
-import { registerSchema, type RegisterFormData } from '../../schema/auth.schema'
-import { useAuthStore } from '../../store/useAuthStore'
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, type UseMutationResult } from "@tanstack/react-query";
+import { AxiosError, type AxiosResponse } from "axios";
 
-// 1. Define the Shape of your Backend Response
+import { sendOTPApi, verifyOTPApi, resendOTPApi } from "../../api/auth.api";
+import { emailSchema, type EmailFormData } from "../../schema/auth.schema";
+import { useAuthStore } from "../../store/useAuthStore";
+
 export interface AuthResponse {
-  message: string;
   success: boolean;
-  user?: {
-    id: string;
-    email: string;
-    username: string;
-    name: string;
+  message: string;
+  data?: {
+    user?: any;
+    isNewUser?: boolean;
   };
 }
 
-// 2. Define the Error Shape
 interface ApiError {
   message: string;
 }
 
 export const useRegister = () => {
-  const navigate = useNavigate()
-  const setUser = useAuthStore((state) => state.setUser)
-  
-  const [step, setStep] = useState<1 | 2>(1)
-  const [registeredEmail, setRegisteredEmail] = useState<string>('')
-  const [otp, setOtp] = useState<string[]>(['', '', '', '', '', ''])
-  const [otpError, setOtpError] = useState<string>('')
-  const [resendCooldown, setResendCooldown] = useState<number>(0)
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const navigate = useNavigate();
+  const setUser = useAuthStore((state) => state.setUser);
+
+  const [step, setStep] = useState<1 | 2>(1);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otpError, setOtpError] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     let interval: number;
     if (resendCooldown > 0) {
       interval = window.setInterval(() => {
-        setResendCooldown((prev) => prev - 1)
-      }, 1000)
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
     }
-    return () => clearInterval(interval)
-  }, [resendCooldown])
+    return () => clearInterval(interval);
+  }, [resendCooldown]);
 
-  const form = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
-  })
+  const form = useForm<EmailFormData>({
+    resolver: zodResolver(emailSchema),
+    defaultValues: { email: "" },
+  });
 
-  /**
-   * Mutation Types: <ResponseData, ErrorData, VariablesData>
-   */
-  
-  // Register Mutation
-  const registerMutation: UseMutationResult<
-    AxiosResponse<AuthResponse>, 
-    AxiosError<ApiError>, 
-    RegisterFormData
+  // SEND OTP
+  const sendOtpMutation: UseMutationResult<
+    AxiosResponse<AuthResponse>,
+    AxiosError<ApiError>,
+    EmailFormData
   > = useMutation({
-    mutationFn: registerApi,
+    mutationFn: sendOTPApi,
     onSuccess: (_, variables) => {
-      setRegisteredEmail(variables.email)
-      setStep(2)
+      setRegisteredEmail(variables.email);
+      setStep(2);
     },
-  })
+  });
 
-  // Verify OTP Mutation
+  // VERIFY OTP
   const verifyMutation: UseMutationResult<
-    AxiosResponse<AuthResponse>, 
-    AxiosError<ApiError>, 
+    AxiosResponse<AuthResponse>,
+    AxiosError<ApiError>,
     { email: string; otp: string }
   > = useMutation({
     mutationFn: verifyOTPApi,
     onSuccess: (response) => {
-  const userData = response.data?.data?.user  // ✅ matches backend shape
-  if (userData) setUser(userData)
-  navigate('/dashboard')
-},
-    onError: (error) => {
-      setOtpError(error.response?.data?.message || 'Invalid OTP')
-    },
-  })
+      const user = response.data?.data?.user;
+      const isNewUser = response.data?.data?.isNewUser;
 
-  // Resend OTP Mutation
+      if (user) setUser(user);
+
+      if (isNewUser) {
+        navigate("/complete-profile");
+      } else {
+        navigate("/dashboard");
+      }
+    },
+    onError: (error) => {
+      setOtpError(error.response?.data?.message || "Invalid OTP");
+    },
+  });
+
+  // RESEND OTP
   const resendMutation: UseMutationResult<
-    AxiosResponse<AuthResponse>, 
-    AxiosError<ApiError>, 
+    AxiosResponse<AuthResponse>,
+    AxiosError<ApiError>,
     string
   > = useMutation({
     mutationFn: resendOTPApi,
     onSuccess: () => {
-      setResendCooldown(60)
-      setOtp(['', '', '', '', '', ''])
-      inputRefs.current[0]?.focus()
+      setResendCooldown(60);
+      setOtp(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
     },
-  })
+  });
 
-  const onRegisterSubmit = (data: RegisterFormData) => {
-    registerMutation.mutate(data)
-  }
+  const onRegisterSubmit = (data: EmailFormData) => {
+    sendOtpMutation.mutate(data);
+  };
+
+  const handleResend = () => {
+    if (!registeredEmail) return;
+    resendMutation.mutate(registeredEmail);
+  };
 
   const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) value = value.slice(-1)
-    if (value && !/^\d$/.test(value)) return 
-    const newOtp = [...otp]
-    newOtp[index] = value
-    setOtp(newOtp)
-    setOtpError('')
-    if (value && index < 5) inputRefs.current[index + 1]?.focus()
-  }
+    if (value.length > 1) value = value.slice(-1);
+    if (value && !/^\d$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+    setOtpError("");
+
+    if (value && index < 5) inputRefs.current[index + 1]?.focus();
+  };
 
   const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus()
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
     }
-  }
+  };
 
   const handleOtpPaste = (e: React.ClipboardEvent) => {
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
     if (pasted.length === 6) {
-      setOtp(pasted.split(''))
-      inputRefs.current[5]?.focus()
+      setOtp(pasted.split(""));
+      inputRefs.current[5]?.focus();
     }
-  }
+  };
 
   const handleVerifySubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const otpValue = otp.join('')
+    e.preventDefault();
+    const otpValue = otp.join("");
+
     if (otpValue.length < 6) {
-      setOtpError('Please enter all 6 digits')
-      return
+      setOtpError("Enter all digits");
+      return;
     }
-    verifyMutation.mutate({ email: registeredEmail, otp: otpValue })
-  }
+
+    verifyMutation.mutate({
+      email: registeredEmail,
+      otp: otpValue,
+    });
+  };
 
   return {
-    step, setStep, registeredEmail, otp, otpError, resendCooldown, inputRefs, form,
-    registerMutation, verifyMutation, resendMutation,
-    onRegisterSubmit, handleOtpChange, handleOtpKeyDown, handleOtpPaste, handleVerifySubmit
-  }
-}
+    step,
+    setStep,
+    registeredEmail,
+    otp,
+    otpError,
+    resendCooldown,
+    inputRefs,
+    form,
+    sendOtpMutation,
+    verifyMutation,
+    resendMutation,
+    onRegisterSubmit,
+    handleOtpChange,
+    handleOtpKeyDown,
+    handleOtpPaste,
+    handleVerifySubmit,
+    handleResend,
+  };
+};
