@@ -7,10 +7,10 @@ import { OtpVerify } from './OtpVerify'
 
 export const Register = () => {
   const {
-    step, setStep, registeredEmail, otp, otpError, resendCooldown,
-    inputRefs, form, registerMutation, verifyMutation, resendMutation,
-    onRegisterSubmit, handleOtpChange, handleOtpKeyDown, handleOtpPaste, handleVerifySubmit
-  } = useRegister()
+  step, setStep, registeredEmail, otp, otpError, resendCooldown,
+  inputRefs, form, sendOtpMutation, verifyMutation, resendMutation,
+  onRegisterSubmit, handleOtpChange, handleOtpKeyDown, handleOtpPaste, handleVerifySubmit, handleResend
+} = useRegister()
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden selection:bg-indigo-500/30">
@@ -30,27 +30,30 @@ export const Register = () => {
         <div className="bg-zinc-900/50 backdrop-blur-xl py-8 px-4 shadow-2xl sm:rounded-2xl sm:px-10 border border-zinc-800/50 overflow-hidden relative min-h-125">
           <AnimatePresence mode="wait">
             {step === 1 ? (
-              <RegisterForm 
-                form={form} 
-                onSubmit={onRegisterSubmit} 
-                mutation={registerMutation} 
-              />
+             <RegisterForm 
+  form={form} 
+  onSubmit={onRegisterSubmit} 
+  mutation={sendOtpMutation} 
+/>
             ) : (
               <OtpVerify 
-                email={registeredEmail}
-                otp={otp}
-                otpError={otpError}
-                resendCooldown={resendCooldown}
-                inputRefs={inputRefs}
-                onBack={() => setStep(1)}
-                onOtpChange={handleOtpChange}
-                onOtpKeyDown={handleOtpKeyDown}
-                onOtpPaste={handleOtpPaste}
-                onSubmit={handleVerifySubmit}
-                onResend={() => resendMutation.mutate(registeredEmail)}
-                verifyMutation={verifyMutation}
-                resendMutation={resendMutation}
-              />
+  email={registeredEmail}
+  otp={otp}
+  otpError={otpError}
+  resendCooldown={resendCooldown}
+  inputRefs={inputRefs}
+  onBack={() => setStep(1)}
+  onOtpChange={handleOtpChange}
+  onOtpKeyDown={handleOtpKeyDown}
+  onOtpPaste={handleOtpPaste}
+  onSubmit={handleVerifySubmit}
+
+  // ✅ CLEAN
+  onResend={handleResend}
+
+  verifyMutation={verifyMutation}
+  resendMutation={resendMutation}
+/>
             )}
           </AnimatePresence>
         </div>

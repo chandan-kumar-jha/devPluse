@@ -1,12 +1,14 @@
 import { Navigate, Outlet } from "react-router";
-import { useSelector } from "react-redux";
+import { useAuthStore } from "../store/useAuthStore";
 
-export default function PublicRoute() {
-  const { isAuthenticated } = useSelector((state: any) => state.auth);
+export const PublicRoute = () => {
+  const { user, isLoading } = useAuthStore();
 
-  if (isAuthenticated) {
+  if (isLoading) return null; // prevent flicker
+
+  if (user) {
     return <Navigate to="/dashboard" replace />;
   }
 
   return <Outlet />;
-}
+};

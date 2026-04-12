@@ -1,112 +1,64 @@
 import { Router } from 'express'
+
 import {
-  register,
+  sendOTP,
   verifyOTPHandler,
   resendOTP,
-  login,
-  refresh,
+  completeProfile,
   getMe,
-  logout,
-  logoutAll,
-  forgotPassword,
-  resetPassword,
-  changePassword,
 } from '../controllers/auth.controller'
+
 import validate from '../middleware/validate'
 import authenticate from '../middleware/authenticate'
 import { asyncHandler } from '../utils/asyncHandler'
+
 import {
-  registerLimiter,
-  loginLimiter,
   otpLimiter,
   resendOtpLimiter,
-  forgotPasswordLimiter,
-  refreshLimiter,
 } from '../middleware/rateLimiter'
+
 import {
-  registerSchema,
-  loginSchema,
   verifyOTPSchema,
   resendOTPSchema,
-  forgotPasswordSchema,
-  resetPasswordSchema,
-  changePasswordSchema,
 } from '../schemas/auth.schema'
 
 const router = Router()
 
-// ── Public routes ──────────────────────────────────────────────────
-router.post('/register',
-  registerLimiter,
-  validate(registerSchema),
-  asyncHandler(register) ,
-  register,
+// 🔥 SEND OTP
+router.post(
+  '/send-otp',
+  otpLimiter,
+  asyncHandler(sendOTP)
 )
 
-router.post('/verify-otp',
+// 🔥 VERIFY OTP
+router.post(
+  '/verify-otp',
   otpLimiter,
   validate(verifyOTPSchema),
-  asyncHandler(verifyOTPHandler),
-  verifyOTPHandler
+  asyncHandler(verifyOTPHandler)
 )
 
-router.post('/resend-otp',
+// 🔁 RESEND OTP
+router.post(
+  '/resend-otp',
   resendOtpLimiter,
   validate(resendOTPSchema),
-  asyncHandler(resendOTP),
-  resendOTP
+  asyncHandler(resendOTP)
 )
 
-router.post('/login',
-  loginLimiter,
-  validate(loginSchema),
-  asyncHandler(login),
-  login
-)
-
-router.post('/refresh',
-  refreshLimiter,
-  asyncHandler(refresh),
-  refresh
-)
-
-router.post('/forgot-password',
-  forgotPasswordLimiter,
-  validate(forgotPasswordSchema),
-  asyncHandler(forgotPassword),
-  forgotPassword
-)
-
-router.post('/reset-password',
-  validate(resetPasswordSchema),
-  asyncHandler(resetPassword),
-  resetPassword
-)
-
-// ── Protected routes — require valid accessToken cookie ────────────
-router.get('/me',
+// 🔥 COMPLETE PROFILE (protected)
+router.post(
+  '/complete-profile',
   authenticate,
-  asyncHandler(getMe),
-  getMe
+  asyncHandler(completeProfile)
 )
 
-router.delete('/logout',
+// 🔥 GET ME (protected)
+router.get(
+  '/me',
   authenticate,
-  asyncHandler(logout),
-  logout
-)
-
-router.delete('/logout-all',
-  authenticate,
-  asyncHandler(logoutAll),
-  logoutAll
-)
-
-router.patch('/change-password',
-  authenticate,
-  validate(changePasswordSchema),
-  asyncHandler(changePassword),
-  changePassword
+  asyncHandler(getMe)
 )
 
 export default router

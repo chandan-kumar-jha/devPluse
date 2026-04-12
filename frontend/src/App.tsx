@@ -1,9 +1,14 @@
-// import React from 'react';
-// import { Navbar } from './components/Navbar';
-// import { HeroSection } from './components/HeroSection';
-import { RouterProvider } from 'react-router';
-import { router } from './routes';
+import { useEffect } from 'react'
+import { RouterProvider } from 'react-router'
+import { router } from './routes'
+import { useAuthStore } from './store/useAuthStore'
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  const loadUser = useAuthStore((s) => s.loadUser)
+
+  useEffect(() => {
+    loadUser() // 🔥 hydrate auth
+  }, [])
+
+  return <RouterProvider router={router} />
 }

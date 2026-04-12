@@ -5,10 +5,11 @@ import { env } from '../config/env'
 const isProduction = env.NODE_ENV === 'production'
 
 const BASE_COOKIE_OPTIONS = {
-  httpOnly: true,                    // JS cannot read — blocks XSS
-   sameSite: isProduction ? ('strict' as const) : ('none' as const),        // blocks CSRF
+  httpOnly: true,
+  sameSite: 'lax' as const,
+  secure: false,
+  path: '/',
 }
-
 // ── Access token cookie — 15 minutes ──────────────────────────────
 const ACCESS_COOKIE_OPTIONS = {
   ...BASE_COOKIE_OPTIONS,

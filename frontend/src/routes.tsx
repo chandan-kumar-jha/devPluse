@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router";
+
 import { Home } from "./pages/Home";
-import { Login } from "./pages/Login";
 import { Register } from "./pages/Register/index";
 import { Dashboard } from "./pages/Dashboard";
 import { Skills } from "./pages/Skills";
@@ -10,53 +10,48 @@ import { Profile } from "./pages/Profile";
 import { Notifications } from "./pages/Notifications";
 import { Sessions } from "./pages/Sessions";
 import { Layout } from "./layout/Layout";
+import { CompleteProfile } from "./pages/CompleteProfile";
+
+import { ProtectedRoute } from "./components/ProtectedRoute";
+import { PublicRoute } from "./components/PublicRoute";
 export const router = createBrowserRouter([
+  // 🌐 PUBLIC
   {
     path: "/",
-    Component: Home,
+    element: <Home />,
   },
+
+  // 🔓 PUBLIC ROUTES
   {
-    path: "/login",
-    Component: Login,
-  },
-  {
-    path: "/register",
-    Component: Register,
-  },
-  {
-    /* Yahan magic hota hai: Layout ko main wrapper banate hain.
-       Saare protected routes iske children honge.
-    */
-    path: "/",
-    Component: Layout, 
+    element: <PublicRoute />, // ✅ wrapper
     children: [
       {
-        path: "dashboard",
-        Component: Dashboard,
+        path: "/register",
+        element: <Register />, // ✅ NO wrapper here
+      },
+    ],
+  },
+
+  // 🔐 PROTECTED ROUTES
+  {
+    element: <ProtectedRoute />, // ✅ wrapper
+    children: [
+      {
+        path: "/complete-profile",
+        element: <CompleteProfile />,
       },
       {
-        path: "skills",
-        Component: Skills,
-      },
-      {
-        path: "goals",
-        Component: Goals,
-      },
-      {
-        path: "sessions",
-        Component: Sessions,
-      },
-      {
-        path: "settings",
-        Component: Settings,
-      },
-      {
-        path: "profile",
-        Component: Profile,
-      },
-      {
-        path: "notifications",
-        Component: Notifications,
+        path: "/",
+        element: <Layout />,
+        children: [
+          { path: "dashboard", element: <Dashboard /> },
+          { path: "skills", element: <Skills /> },
+          { path: "goals", element: <Goals /> },
+          { path: "sessions", element: <Sessions /> },
+          { path: "settings", element: <Settings /> },
+          { path: "profile", element: <Profile /> },
+          { path: "notifications", element: <Notifications /> },
+        ],
       },
     ],
   },

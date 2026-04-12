@@ -16,6 +16,7 @@ export interface ProfileState {
   uploadAvatar: (file: File) => Promise<void>;
   deleteAccount: (username: string) => Promise<void>;
   clearMessages: () => void;
+  resetProfile: () => void
 }
 
 export interface AuthState {
