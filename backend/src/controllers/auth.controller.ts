@@ -21,7 +21,7 @@ import { sendOTPEmail } from '../utils/email'
 import { AppError } from '../middleware/errorHandler'
 import { VerifyOTPInput } from '../schemas/auth.schema'
 
-// ── Save refresh token ─────────────────────────────────────────────
+// ── Save refresh token ─────────────────────────────
 const saveRefreshToken = async (
   userId: mongoose.Types.ObjectId,
   refreshToken: string
@@ -70,16 +70,23 @@ export const sendOTP = async (req: Request, res: Response): Promise<void> => {
     await user.save()
   }
 
+  // 🔥 DEBUG OTP (REMOVE AFTER DEBUG)
+  console.log(`🔐 [DEBUG OTP] ${cleanEmail}: ${otp}`)
+
   const emailResult = await sendOTPEmail(cleanEmail, user.name, otp)
 
-  // 🔥 FIX: DO NOT BREAK FLOW
   if (!emailResult.success) {
-    console.log('⚠️ Email failed, using console OTP (dev mode)')
+    console.log('⚠️ Email failed, using console OTP')
   }
 
   res.status(200).json({
     success: true,
     message: 'OTP sent successfully',
+
+    // 🔥 DEV ONLY
+    ...(process.env.NODE_ENV !== 'production' && {
+      debugOtp: otp,
+    }),
   })
 }
 
@@ -98,7 +105,9 @@ export const verifyOTPHandler = async (req: Request, res: Response): Promise<voi
   let isNewUser = false
   if (!user.isVerified) isNewUser = true
 
-  if (!user.otp || !user.otpExpiry) throw new AppError('No OTP found', 400)
+  if (!user.otp || !user.otpExpiry) {
+    throw new AppError('No OTP found', 400)
+  }
 
   if (user.otpAttempts >= 5) {
     throw new AppError('Too many attempts. Request new OTP.', 400)
@@ -128,10 +137,17 @@ export const verifyOTPHandler = async (req: Request, res: Response): Promise<voi
   user.otpLastSent = null as any
   await user.save()
 
-  const { accessToken, refreshToken } = generateTokens(user._id as any, user.email)
+  const { accessToken, refreshToken } = generateTokens(
+    user._id as any,
+    user.email
+  )
+
   await saveRefreshToken(user._id as mongoose.Types.ObjectId, refreshToken)
 
+  // 🔥 SET COOKIE
   setAuthCookies(res, accessToken, refreshToken)
+
+  console.log(`✅ User verified: ${email}`)
 
   res.status(200).json({
     success: true,
@@ -174,19 +190,30 @@ export const resendOTP = async (req: Request, res: Response): Promise<void> => {
 
   await user.save()
 
+  // 🔥 DEBUG RESEND OTP
+  console.log(`🔁 [DEBUG RESEND OTP] ${email}: ${otp}`)
+
   const emailResult = await sendOTPEmail(email, user.name, otp)
 
   if (!emailResult.success) {
-    console.log('⚠️ Resend email failed (dev mode)')
+    console.log('⚠️ Resend email failed')
   }
 
   res.status(200).json({
     success: true,
     message: 'OTP resent successfully',
+
+    ...(process.env.NODE_ENV !== 'production' && {
+      debugOtp: otp,
+    }),
   })
 }
+
+// ─────────────────────────────────────────
+// 🔥 COMPLETE PROFILE
+// ─────────────────────────────────────────
 export const completeProfile = async (req: Request, res: Response): Promise<void> => {
-  const userId = (req as any).user?.userId   // ✅ FIXED
+  const userId = (req as any).user?.userId
 
   if (!userId) throw new AppError('Unauthorized', 401)
 
@@ -221,10 +248,10 @@ export const completeProfile = async (req: Request, res: Response): Promise<void
 }
 
 // ─────────────────────────────────────────
-// 🔥 GET ME (AUTH PERSISTENCE FIX)
+// 🔥 GET ME
 // ─────────────────────────────────────────
 export const getMe = async (req: Request, res: Response): Promise<void> => {
-  const userId = (req as any).user?.userId   // ✅ FIX
+  const userId = (req as any).user?.userId
 
   if (!userId) {
     throw new AppError('Unauthorized', 401)
