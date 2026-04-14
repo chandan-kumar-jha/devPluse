@@ -13,7 +13,7 @@ const BASE_COOKIE_OPTIONS: CookieOptions = {
   sameSite: 'none',
   secure: true,
   path: '/',
-  domain: '.onrender.com', // 🔥 ADD THIS
+ 
 }
 
 // ── ACCESS TOKEN ────────────────────────────────────
