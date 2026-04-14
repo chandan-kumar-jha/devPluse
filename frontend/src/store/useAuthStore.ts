@@ -24,9 +24,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   error: null,
 
   setUser: (user) => set({ user, error: null }),
-
-  // 🔥 NEW — AUTH PERSISTENCE
-  loadUser: async () => {
+loadUser: async () => {
   try {
     const res = await api.get('/auth/me')
 
@@ -35,8 +33,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       isLoading: false,
     })
   } catch (err: any) {
-    // 🔥 CRITICAL FIX
     if (err?.response?.status === 401) {
+      // ✅ THIS IS NORMAL CASE
       set({
         user: null,
         isLoading: false,
@@ -47,6 +45,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({
       user: null,
       isLoading: false,
+      error: "Something went wrong",
     })
   }
 }
