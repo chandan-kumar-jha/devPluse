@@ -1,11 +1,12 @@
 import { Navigate, Outlet } from "react-router";
 import { useAuthStore } from "../store/useAuthStore";
+
+
 export const PublicRoute = () => {
-  const { user } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
 
-  if (user) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  if (isLoading) return null; // 🔥 add karo
 
+  if (user) return <Navigate to="/dashboard" replace />;
   return <Outlet />;
 };

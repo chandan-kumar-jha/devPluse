@@ -22,7 +22,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
 
   // 🔥 FIXED: DO NOT BLOCK UI INITIALLY
-  isLoading: false,
+  isLoading: true,
 
   error: null,
 
@@ -56,14 +56,12 @@ export const useAuthStore = create<AuthState>((set) => ({
       })
     }
   },
-
-  logout: async () => {
-    try {
-      await api.delete('/auth/logout')
-    } catch {
-      // ignore
-    }
-
-    set({ user: null })
-  },
+logout: async () => {
+  try {
+    await api.post('/auth/logout') // was: api.delete ❌
+  } catch {
+    // ignore
+  }
+  set({ user: null })
+},
 }))
