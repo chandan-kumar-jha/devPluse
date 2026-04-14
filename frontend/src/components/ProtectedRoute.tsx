@@ -5,14 +5,13 @@ export const ProtectedRoute = () => {
   const { user, isLoading } = useAuthStore();
   const location = useLocation();
 
-  // ⏳ wait for auth
   if (isLoading) {
-    return (
-      <div className="h-screen flex items-center justify-center text-white">
-        Loading...
-      </div>
-    );
-  }
+  return (
+    <div className="h-screen flex items-center justify-center text-white">
+      Loading...
+    </div>
+  );
+}
 
   // ❌ not logged in
   if (!user) {

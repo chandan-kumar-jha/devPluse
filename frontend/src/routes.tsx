@@ -17,21 +17,18 @@ import { PublicRoute } from "./components/PublicRoute";
 export const router = createBrowserRouter([
   // 🌐 PUBLIC
   {
-    path: "/",
-    element: <Home />,
-  },
-
-  // 🔓 PUBLIC ROUTES
-  {
-    element: <PublicRoute />, // ✅ wrapper
-    children: [
-      {
-        path: "/register",
-        element: <Register />, // ✅ NO wrapper here
-      },
-    ],
-  },
-
+  element: <PublicRoute />,
+  children: [
+    {
+      path: "/",
+      element: <Home />,
+    },
+    {
+      path: "/register",
+      element: <Register />,
+    },
+  ],
+},
   // 🔐 PROTECTED ROUTES
   {
     element: <ProtectedRoute />, // ✅ wrapper
