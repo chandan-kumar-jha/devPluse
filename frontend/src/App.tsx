@@ -5,10 +5,16 @@ import { useAuthStore } from './store/useAuthStore'
 
 export default function App() {
   const loadUser = useAuthStore((s) => s.loadUser)
+  const isLoading = useAuthStore((s) => s.isLoading)
 
   useEffect(() => {
-    loadUser() // 🔥 hydrate auth
+    loadUser()
   }, [])
+
+  // ✅ ONLY block when actually loading
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
 
   return <RouterProvider router={router} />
 }
