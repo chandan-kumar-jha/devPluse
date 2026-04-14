@@ -1,95 +1,50 @@
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
-// ── Validate env (fail fast) ─────────────────────────────
-if (!process.env.BREVO_USER || !process.env.BREVO_PASS) {
-  throw new Error("❌ Missing BREVO SMTP credentials")
-}
+const resend = new Resend(process.env.RESEND_API_KEY!)
 
-// ── Transporter (singleton) ─────────────────────────────
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_USER,
-    pass: process.env.BREVO_PASS,
-  },
-})
-
-// ── Email Template ──────────────────────────────────────
 const getOTPTemplate = (name: string, otp: string) => `
-  <div style="
-    font-family: Arial, sans-serif;
-    max-width: 480px;
-    margin: 0 auto;
-    border: 1px solid #eee;
-    border-radius: 12px;
-    overflow: hidden;
-  ">
+  <div style="font-family: Arial; max-width: 480px; margin:auto;">
+    <h2>⚡ DevPulse</h2>
+    <p>Hi ${name || "Developer"},</p>
+
+    <p>Your login code:</p>
+
     <div style="
-      background: linear-gradient(135deg, #5c47e0, #7c3aed);
-      padding: 20px;
-      text-align: center;
-      color: white;
+      font-size: 32px;
       font-weight: bold;
-      font-size: 18px;
+      letter-spacing: 6px;
+      margin: 20px 0;
+      color: #5c47e0;
     ">
-      ⚡ DevPulse
+      ${otp}
     </div>
 
-    <div style="padding: 24px;">
-      <p>Hi ${name || "Developer"},</p>
-
-      <p>Your login code:</p>
-
-      <div style="
-        font-size: 32px;
-        font-weight: bold;
-        text-align: center;
-        margin: 20px 0;
-        letter-spacing: 6px;
-        color: #5c47e0;
-      ">
-        ${otp}
-      </div>
-
-      <p style="font-size: 13px; color: #666;">
-        This code expires in <strong>10 minutes</strong>.
-      </p>
-
-      <p style="font-size: 12px; color: #999;">
-        If you didn’t request this, ignore this email.
-      </p>
-    </div>
+    <p>This expires in 10 minutes.</p>
   </div>
 `
 
-// ── Send OTP Email ──────────────────────────────────────
 export const sendOTPEmail = async (
   toEmail: string,
   name: string,
   otp: string
-): Promise<{ success: boolean; error?: string }> => {
+): Promise<{ success: boolean }> => {
   try {
-    const info = await transporter.sendMail({
-     from: `"DevPulse" <projectman884@gmail.com>`, // ✅ your real email,
+    const res = await resend.emails.send({
+      from: process.env.EMAIL_FROM!, // 🔥 from env
       to: toEmail,
       subject: "Your DevPulse login code",
       html: getOTPTemplate(name, otp),
     })
 
-    console.log("📨 Email sent:", info.messageId)
+    console.log("📨 Email sent:", res)
 
     return { success: true }
   } catch (error: any) {
     console.error("❌ Email failed:", error?.message)
 
-    // 🔥 fallback (critical for debugging)
-    console.log(`📩 OTP for ${toEmail}: ${otp}`)
+    // 🔥 fallback (VERY IMPORTANT)
+    console.log(`🔐 [FALLBACK OTP] ${toEmail}: ${otp}`)
 
-    return {
-      success: false,
-      error: error?.message,
-    }
+    return { success: false }
   }
 }
