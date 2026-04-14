@@ -27,22 +27,30 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   // 🔥 NEW — AUTH PERSISTENCE
   loadUser: async () => {
-    try {
-      const res = await api.get('/auth/me')
+  try {
+    const res = await api.get('/auth/me')
 
-      set({
-        user: res.data.data.user,
-        isLoading: false,
-      })
-    } catch {
+    set({
+      user: res.data.data.user,
+      isLoading: false,
+    })
+  } catch (err: any) {
+    // 🔥 CRITICAL FIX
+    if (err?.response?.status === 401) {
       set({
         user: null,
         isLoading: false,
       })
+      return
     }
-  },
-  
 
+    set({
+      user: null,
+      isLoading: false,
+    })
+  }
+}
+,
   logout: async () => {
     try {
       await api.delete('/auth/logout')
