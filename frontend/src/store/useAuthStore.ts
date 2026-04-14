@@ -14,48 +14,56 @@ interface AuthState {
   error: string | null
 
   setUser: (user: User | null) => void
-  loadUser: () => Promise<void> // 🔥 ADD THIS
+  loadUser: () => Promise<void>
   logout: () => Promise<void>
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  isLoading: true, // 🔥 VERY IMPORTANT (was false)
+
+  // 🔥 FIXED: DO NOT BLOCK UI INITIALLY
+  isLoading: false,
+
   error: null,
 
   setUser: (user) => set({ user, error: null }),
-loadUser: async () => {
-  try {
-    const res = await api.get('/auth/me')
 
-    set({
-      user: res.data.data.user,
-      isLoading: false,
-    })
-  } catch (err: any) {
-    if (err?.response?.status === 401) {
-      // ✅ THIS IS NORMAL CASE
+  // 🔥 AUTH LOAD (ONLY WHEN NEEDED)
+  loadUser: async () => {
+    set({ isLoading: true })
+
+    try {
+      const res = await api.get('/auth/me')
+
+      set({
+        user: res.data.data.user,
+        isLoading: false,
+      })
+    } catch (err: any) {
+      // ✅ 401 = normal (not logged in)
+      if (err?.response?.status === 401) {
+        set({
+          user: null,
+          isLoading: false,
+        })
+        return
+      }
+
       set({
         user: null,
         isLoading: false,
+        error: 'Something went wrong',
       })
-      return
     }
+  },
 
-    set({
-      user: null,
-      isLoading: false,
-      error: "Something went wrong",
-    })
-  }
-}
-,
   logout: async () => {
     try {
       await api.delete('/auth/logout')
-    } catch { /* empty */ }
+    } catch {
+      // ignore
+    }
 
     set({ user: null })
   },
 }))
-
